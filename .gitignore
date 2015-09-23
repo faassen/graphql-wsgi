@@ -1,0 +1,5 @@
+bin
+src
+.mr.developer.cfg
+develop-eggs
+.installed.cfg
