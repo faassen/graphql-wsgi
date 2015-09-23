@@ -64,3 +64,27 @@ def test_allows_GET_with_variable_values():
             'test': 'Hello Dolly'
         }
     }
+
+
+def test_allows_GET_with_operation_name():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+    response = c.get('/', {
+        'query': '''\
+query helloYou { test(who: "You"), ...shared }
+query helloWorld { test(who: "World"), ...shared }
+query helloDolly { test(who: "Dolly"), ...shared }
+fragment shared on Root {
+  shared: test(who: "Everyone")
+}'''
+        ,
+        'operationName': 'helloWorld'
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World',
+            'shared': 'Hello Everyone'
+        }
+    }
