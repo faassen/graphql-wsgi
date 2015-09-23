@@ -1,8 +1,7 @@
 # wsgi_graphql
 
-Port of graphql-exress to Python and WSGI. Uses graphqllib_.
-
-.. _graphqllib: https://github.com/dittos/graphqllib
+Port of [graphql-express[(https://github.com/graphql/express-graphql)
+to Python and WSGI. Uses [graphqllib](https://github.com/dittos/graphqllib).
 
 ## Project Status
 
