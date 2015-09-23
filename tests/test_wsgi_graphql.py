@@ -103,7 +103,7 @@ def test_POST_functionality_allows_POST_with_JSON_encoding():
     }
 
 
-def test_POST_functionality_with_url_encoding():
+def test_POST_functionality_allows_POST_with_url_encoding():
     wsgi = wsgi_graphql(TestSchema)
 
     c = Client(wsgi)
@@ -113,5 +113,22 @@ def test_POST_functionality_with_url_encoding():
     assert response.json == {
         'data': {
             'test': 'Hello World'
+        }
+    }
+
+
+def test_POST_functionality_supports_POST_JSON_query_with_string_variables():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/', {
+        'query': 'query helloWho($who: String){ test(who: $who) }',
+        'variables': json.dumps({'who': 'Dolly'})
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello Dolly'
         }
     }
