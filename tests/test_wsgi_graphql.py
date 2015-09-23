@@ -38,7 +38,7 @@ TestSchema = GraphQLSchema(
 )
 
 
-def test_allows_GET_with_query_param():
+def test_GET_functionality_allows_GET_with_query_param():
     wsgi = wsgi_graphql(TestSchema)
 
     c = Client(wsgi)
@@ -50,7 +50,7 @@ def test_allows_GET_with_query_param():
     }
 
 
-def test_allows_GET_with_variable_values():
+def test_GET_functionality_allows_GET_with_variable_values():
     wsgi = wsgi_graphql(TestSchema)
 
     c = Client(wsgi)
@@ -66,19 +66,18 @@ def test_allows_GET_with_variable_values():
     }
 
 
-def test_allows_GET_with_operation_name():
+def test_GET_functionality_allows_GET_with_operation_name():
     wsgi = wsgi_graphql(TestSchema)
 
     c = Client(wsgi)
     response = c.get('/', {
-        'query': '''\
-query helloYou { test(who: "You"), ...shared }
-query helloWorld { test(who: "World"), ...shared }
-query helloDolly { test(who: "Dolly"), ...shared }
-fragment shared on Root {
-  shared: test(who: "Everyone")
-}'''
-        ,
+        'query': '''
+          query helloYou { test(who: "You"), ...shared }
+          query helloWorld { test(who: "World"), ...shared }
+          query helloDolly { test(who: "Dolly"), ...shared }
+          fragment shared on Root {
+            shared: test(who: "Everyone")
+          }''',
         'operationName': 'helloWorld'
     })
 
@@ -86,5 +85,19 @@ fragment shared on Root {
         'data': {
             'test': 'Hello World',
             'shared': 'Hello Everyone'
+        }
+    }
+
+
+def test_POST_functionality_allows_POST_with_JSON_encoding():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post_json('/', {'query': '{test}'})
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World'
         }
     }
