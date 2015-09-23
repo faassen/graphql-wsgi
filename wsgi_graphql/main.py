@@ -50,7 +50,7 @@ def parse_body(request):
         return {'query': request.text}
     elif request.content_type == 'application/json':
         return request.json
-    elif request.content_type == 'x-www-form-urlencoded':
+    elif request.content_type == 'application/x-www-form-urlencoded':
         return request.POST
 
     return {}

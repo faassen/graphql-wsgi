@@ -101,3 +101,17 @@ def test_POST_functionality_allows_POST_with_JSON_encoding():
             'test': 'Hello World'
         }
     }
+
+
+def test_POST_functionality_with_url_encoding():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/', {'query': '{test}'})
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World'
+        }
+    }
