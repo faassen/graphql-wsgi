@@ -243,3 +243,27 @@ def test_POST_functionality_allows_POST_with_operation_name():
             'shared': 'Hello Everyone'
         }
     }
+
+
+def test_POST_functionality_allows_POST_with_GET_operation_name():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/?operationName=helloWorld', {
+        'query': '''
+              query helloYou { test(who: "You"), ...shared }
+              query helloWorld { test(who: "World"), ...shared }
+              query helloDolly { test(who: "Dolly"), ...shared }
+              fragment shared on Root {
+                shared: test(who: "Everyone")
+              }
+            '''
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World',
+            'shared': 'Hello Everyone'
+        }
+    }
