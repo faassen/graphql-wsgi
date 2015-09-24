@@ -1,6 +1,6 @@
 import json
 from webtest import TestApp as Client
-from wsgi_graphql import wsgi_graphql
+from wsgi_graphql import wsgi_graphql, wsgi_graphql_dynamic
 
 from graphql.core.type import (
     GraphQLObjectType,
@@ -298,6 +298,34 @@ def test_pretty_printing_supports_pretty_printing():
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{test}'})
+    assert response.body == '''\
+{
+  "data": {
+    "test": "Hello World"
+  }
+}'''
+
+
+def test_pretty_printing_configured_by_request():
+    def options_from_request(request):
+        return TestSchema, None, request.GET.get('pretty') == '1'
+
+    wsgi = wsgi_graphql_dynamic(options_from_request)
+
+    c = Client(wsgi)
+
+    response = c.get('/', {
+        'query': '{test}',
+        'pretty': '0'
+    })
+
+    assert response.body == '{"data":{"test":"Hello World"}}'
+
+    response = c.get('/', {
+        'query': '{test}',
+        'pretty': '1'
+    })
+
     assert response.body == '''\
 {
   "data": {

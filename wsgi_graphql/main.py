@@ -8,9 +8,11 @@ from graphql.core import graphql
 from graphql.core.error import format_error
 
 
-def wsgi_graphql(schema, root_value=None, pretty=None):
+def wsgi_graphql_dynamic(get_options):
     @wsgify
     def handle(request):
+        schema, root_value, pretty = get_options(request)
+
         if request.method != 'GET' and request.method != 'POST':
             raise HTTPMethodNotAllowed(headers={'Allow': 'GET, POST'})
 
@@ -35,9 +37,16 @@ def wsgi_graphql(schema, root_value=None, pretty=None):
     return handle
 
 
+def wsgi_graphql(schema, root_value=None, pretty=None):
+    def get_options(request):
+        return schema, root_value, pretty
+
+    return wsgi_graphql_dynamic(get_options)
+
+
 def json_dump(d, pretty):
     if not pretty:
-        return json.dumps(d)
+        return json.dumps(d, separators=(',', ':'))
     return json.dumps(d, sort_keys=True,
                       indent=2, separators=(',', ': '))
 
