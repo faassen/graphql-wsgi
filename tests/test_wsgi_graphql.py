@@ -442,3 +442,19 @@ def test_error_handling_handles_unsupported_utf_charset():
     assert response.json == {
         'errors': [{'message': 'Unsupported charset "UTF-53".'}]
     }
+
+
+# I have no idea how to handle Content-Encoding with WSGI
+@pytest.mark.xfail
+def test_error_handling_handles_unknown_encoding():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+
+    response = c.post('/',
+                      '!@#$%^*(&^$%#@',
+                      headers={'Content-Encoding': 'garbage'},
+                      status=415)
+    assert response.json == {
+        'errors': [{'message': 'Unsupported content encoding "garbage".'}]
+    }
