@@ -153,3 +153,20 @@ def test_POST_functionality_supports_POST_JSON_query_with_JSON_variables():
             'test': 'Hello Dolly'
         }
     }
+
+
+def test_POST_functionality_POST_url_encoded_query_with_string_variables():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/', {
+        'query': 'query helloWho($who: String){ test(who: $who) }',
+        'variables': json.dumps({'who': 'Dolly'})
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello Dolly'
+        }
+    }
