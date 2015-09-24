@@ -41,7 +41,16 @@ def wsgi_graphql_dynamic(get_options):
 
         d = {'data': result.data}
         if result.errors is not None:
-            d['errors'] = [format_error(error) for error in result.errors]
+            # FIXME: this is a hack, we should really just be able
+            # to use format_error consistently here
+            # see https://github.com/dittos/graphqllib/issues/55
+            formatted_errors = []
+            for error in result.errors:
+                if not isinstance(error, dict):
+                    formatted_errors.append(format_error(error))
+                else:
+                    formatted_errors.append(error)
+            d['errors'] = formatted_errors
 
         return Response(status=status,
                         content_type='application/json',
