@@ -16,6 +16,10 @@ def raises(*_):
     raise Exception("Raises!")
 
 
+def resolver(root, args, *_):
+    return 'Hello ' + (args['who'] or 'World')
+
+
 TestSchema = GraphQLSchema(
     query=GraphQLObjectType(
         'Root',
@@ -27,7 +31,7 @@ TestSchema = GraphQLSchema(
                         type=GraphQLString
                     )
                 },
-                resolver=lambda root, args, *_: 'Hello ' + (args['who'] or 'World')
+                resolver=resolver
             ),
             'thrower': GraphQLField(
                 GraphQLNonNull(GraphQLString),
