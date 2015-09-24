@@ -101,7 +101,7 @@ def get_graphql_params(request, data):
 
     variables = request.GET.get('variables') or data.get('variables')
 
-    if variables is not None:
+    if variables is not None and isinstance(variables, basestring):
         try:
             variables = json.loads(variables)
         except ValueError:

@@ -506,3 +506,21 @@ def test_error_handling_unknown_field():
             }
         ]
     }
+
+
+# this didn't appear to be covered in the test suite of express-graphql
+def test_POST_functionality_variables_in_json_POST_body_not_encoded():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post_json('/', {
+        'query': 'query helloWho($who: String){ test(who: $who) }',
+        'variables': {'who': 'Dolly'}
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello Dolly'
+        }
+    }
