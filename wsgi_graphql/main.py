@@ -5,6 +5,7 @@ from webob.response import Response
 
 
 from graphql.core import graphql
+from graphql.core.error import format_error
 
 
 def wsgi_graphql_dynamic(get_options):
@@ -40,7 +41,7 @@ def wsgi_graphql_dynamic(get_options):
 
         d = {'data': result.data}
         if result.errors is not None:
-            d['errors'] = result.errors
+            d['errors'] = [format_error(error) for error in result.errors]
 
         return Response(status=status,
                         content_type='application/json',

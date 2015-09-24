@@ -484,3 +484,25 @@ def test_error_handling_handles_unsupported_http_methods():
     assert response.json == {
         'errors': [{'message': 'GraphQL only supports GET and POST requests.'}]
     }
+
+
+# FIXME: Has weird format for error locations in output
+# See https://github.com/dittos/graphqllib/issues/54
+def test_error_handling_unknown_field():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    # I think this should actually be a 200 status
+    response = c.get('/?query={unknown}', status=400)
+    # locations formatting appears to be different here...
+    assert response.json == {
+        'data': None,
+        'errors': [
+            {
+                "locations": [
+                    [1, 2]
+                ],
+                "message": 'Cannot query field "unknown" on "Root".'
+            }
+        ]
+    }
