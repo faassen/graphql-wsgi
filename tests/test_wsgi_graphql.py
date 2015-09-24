@@ -1,3 +1,4 @@
+import pytest
 import json
 from webtest import TestApp as Client
 from wsgi_graphql import wsgi_graphql, wsgi_graphql_dynamic
@@ -13,7 +14,7 @@ from graphql.core.type import (
 
 
 def raises(*_):
-    raise Exception("Raises!")
+    raise Exception("Throws!")
 
 
 def resolver(root, args, *_):
@@ -332,3 +333,43 @@ def test_pretty_printing_configured_by_request():
     "test": "Hello World"
   }
 }'''
+
+
+# FIXME:
+# see https://github.com/dittos/graphqllib/issues/52
+@pytest.mark.xfail
+def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.get('/', {'query': '{thrower}'})
+
+    assert response.status == 200
+    assert response.json == {
+        'data': None,
+        'errors': [{
+            'message': 'Throws!',
+            'locations': [{'line': 1, 'column': 2}]
+        }]
+    }
+
+
+# FIXME:
+# see https://github.com/dittos/graphqllib/issues/53
+@pytest.mark.xfail
+def test_error_handling_handles_syntax_errors_caught_by_graphql():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.get('/', {'query': 'syntaxerror'})
+
+    assert response.status == 400
+    assert response.json == {
+        'data': None,
+        'errors': [{
+            'message': ('Syntax Error GraphQL request (1:1) '
+                        'Unexpected Name "syntaxerror"\n\n1: syntaxerror\n'
+                        '  ^\n'),
+            'locations': [{'line': 1, 'column': 1}]
+        }]
+    }

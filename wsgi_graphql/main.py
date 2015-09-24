@@ -29,7 +29,7 @@ def wsgi_graphql_dynamic(get_options):
 
         d = {'data': result.data}
         if result.errors is not None:
-            d['errors'] = [format_error(error) for error in result.errors]
+            d['errors'] = result.errors
 
         return Response(status=status,
                         content_type='application/json',
