@@ -39,7 +39,7 @@ def json_dump(d, pretty):
     if not pretty:
         return json.dumps(d)
     return json.dumps(d, sort_keys=True,
-                      indent=4, separators=(',', ': '))
+                      indent=2, separators=(',', ': '))
 
 
 def parse_body(request):

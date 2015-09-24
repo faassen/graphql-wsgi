@@ -283,3 +283,24 @@ def test_POST_functionality_allows_other_UTF_charsets():
             'test': 'Hello World'
         }
     }
+
+
+# Don't test  "allows gzipped POST bodies" and "allows deflated POST bodies"
+# as this seems to be outside of
+# the domain of WSGI and up to the web server itself.
+
+# "allows for pre-parsed POST bodies" requires some kind of convention
+# for pre-parsing that doesn't exist to my knowledge in WSGI or WebOb,
+# though with WebOb it can be done with a Request subclass.
+
+def test_pretty_printing_supports_pretty_printing():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.get('/', {'query': '{test}'})
+    assert response.body == '''\
+{
+  "data": {
+    "test": "Hello World"
+  }
+}'''
