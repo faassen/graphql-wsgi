@@ -412,3 +412,19 @@ def test_error_handling_handles_plain_POST_text():
     assert response.json == {
         'errors': [{'message': 'Must provide query string.'}]
     }
+
+
+# need to do the test with foobar instead of ascii as in the original
+# test as ascii *is* a recognized encoding.
+def test_error_handling_handles_unsupported_charset():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+
+    response = c.post('/',
+                      '{ test(who: "World") }',
+                      content_type='application/graphql; charset=foobar',
+                      status=415)
+    assert response.json == {
+        'errors': [{'message': 'Unsupported charset "FOOBAR".'}]
+    }

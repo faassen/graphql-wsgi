@@ -61,7 +61,11 @@ def parse_body(request):
         return {}
 
     if request.content_type == 'application/graphql':
-        return {'query': request.text}
+        try:
+            return {'query': request.text}
+        except LookupError:
+            raise Error('Unsupported charset "%s".' % request.charset.upper(),
+                        status=415)
     elif request.content_type == 'application/json':
         try:
             return request.json
@@ -97,10 +101,13 @@ def error_response(e, pretty):
     d = {
         'errors': [{'message': e.message}]
     }
-    return Response(status=400,
+    return Response(status=e.status,
                     content_type='application/json',
                     body=json_dump(d, pretty))
 
 
 class Error(Exception):
-    pass
+    def __init__(self, message, status=400):
+        super(Error, self).__init__(message)
+        self.status = status
+
