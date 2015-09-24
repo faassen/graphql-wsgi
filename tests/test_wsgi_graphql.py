@@ -361,9 +361,8 @@ def test_error_handling_handles_syntax_errors_caught_by_graphql():
     wsgi = wsgi_graphql(TestSchema, pretty=True)
 
     c = Client(wsgi)
-    response = c.get('/', {'query': 'syntaxerror'})
+    response = c.get('/', {'query': 'syntaxerror'}, status=400)
 
-    assert response.status == 400
     assert response.json == {
         'data': None,
         'errors': [{
@@ -372,4 +371,15 @@ def test_error_handling_handles_syntax_errors_caught_by_graphql():
                         '  ^\n'),
             'locations': [{'line': 1, 'column': 1}]
         }]
+    }
+
+
+def test_error_handling_handles_errors_caused_by_a_lack_of_query():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.get('/', status=400)
+
+    assert response.json == {
+        'errors': [{'message': 'Must provide query string.'}]
     }

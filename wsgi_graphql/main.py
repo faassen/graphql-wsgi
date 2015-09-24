@@ -2,7 +2,7 @@ import json
 
 from webob.dec import wsgify
 from webob.response import Response
-from webob.exc import HTTPBadRequest, HTTPMethodNotAllowed
+from webob.exc import HTTPException, HTTPBadRequest, HTTPMethodNotAllowed
 
 from graphql.core import graphql
 from graphql.core.error import format_error
@@ -18,8 +18,16 @@ def wsgi_graphql_dynamic(get_options):
 
         data = parse_body(request)
 
-        query, variables, operation_name = get_graphql_params(request, data)
-
+        try:
+            query, variables, operation_name = get_graphql_params(
+                request, data)
+        except ParamError, e:
+            d = {
+                'errors': [{'message': e.message}]
+            }
+            return Response(status=400,
+                            content_type='application/json',
+                            body=json_dump(d, pretty))
         result = graphql(schema, query, root_value, variables, operation_name)
 
         if result.data is not None:
@@ -65,11 +73,15 @@ def parse_body(request):
     return {}
 
 
+class ParamError(Exception):
+    pass
+
+
 def get_graphql_params(request, data):
     query = request.GET.get('query') or data.get('query')
 
     if query is None:
-        raise HTTPBadRequest('Must provide query string')
+        raise ParamError('Must provide query string.')
 
     variables = request.GET.get('variables') or data.get('variables')
 
@@ -77,7 +89,7 @@ def get_graphql_params(request, data):
         try:
             variables = json.loads(variables)
         except ValueError:
-            raise HTTPBadRequest('Variables are invalid JSON.')
+            raise ParamError('Variables are invalid JSON.')
 
     operation_name = (request.GET.get('operationName') or
                       data.get('operationName'))
