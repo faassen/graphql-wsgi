@@ -473,3 +473,14 @@ def test_error_handling_handles_poorly_formed_variables():
     assert response.json == {
         'errors': [{'message': 'Variables are invalid JSON.'}]
     }
+
+
+def test_error_handling_handles_unsupported_http_methods():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.put('/?query={test}', status=405)
+
+    assert response.json == {
+        'errors': [{'message': 'GraphQL only supports GET and POST requests.'}]
+    }

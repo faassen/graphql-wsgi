@@ -2,7 +2,7 @@ import json
 
 from webob.dec import wsgify
 from webob.response import Response
-from webob.exc import HTTPMethodNotAllowed
+
 
 from graphql.core import graphql
 
@@ -13,7 +13,13 @@ def wsgi_graphql_dynamic(get_options):
         schema, root_value, pretty = get_options(request)
 
         if request.method != 'GET' and request.method != 'POST':
-            raise HTTPMethodNotAllowed(headers={'Allow': 'GET, POST'})
+            return error_response(
+                Error(
+                    'GraphQL only supports GET and POST requests.',
+                    status=405,
+                    headers={'Allow': 'GET, POST'}
+                ),
+                pretty)
 
         try:
             data = parse_body(request)
@@ -101,13 +107,16 @@ def error_response(e, pretty):
     d = {
         'errors': [{'message': e.message}]
     }
-    return Response(status=e.status,
-                    content_type='application/json',
-                    body=json_dump(d, pretty))
+    response = Response(status=e.status,
+                        content_type='application/json',
+                        body=json_dump(d, pretty))
+    if e.headers:
+        response.headers.update(e.headers)
+    return response
 
 
 class Error(Exception):
-    def __init__(self, message, status=400):
+    def __init__(self, message, status=400, headers=None):
         super(Error, self).__init__(message)
         self.status = status
-
+        self.headers = headers
