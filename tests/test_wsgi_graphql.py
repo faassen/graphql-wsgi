@@ -267,3 +267,19 @@ def test_POST_functionality_allows_POST_with_GET_operation_name():
             'shared': 'Hello Everyone'
         }
     }
+
+
+def test_POST_functionality_allows_other_UTF_charsets():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/',
+                      u'{ test(who: "World") }'.encode('utf_16_le'),
+                      content_type='application/graphql; charset=utf-16')
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World'
+        }
+    }
