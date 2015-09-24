@@ -16,18 +16,16 @@ def wsgi_graphql_dynamic(get_options):
         if request.method != 'GET' and request.method != 'POST':
             raise HTTPMethodNotAllowed(headers={'Allow': 'GET, POST'})
 
-        data = parse_body(request)
+        try:
+            data = parse_body(request)
+        except Error, e:
+            return error_response(e, pretty)
 
         try:
             query, variables, operation_name = get_graphql_params(
                 request, data)
-        except ParamError, e:
-            d = {
-                'errors': [{'message': e.message}]
-            }
-            return Response(status=400,
-                            content_type='application/json',
-                            body=json_dump(d, pretty))
+        except Error, e:
+            return error_response(e, pretty)
         result = graphql(schema, query, root_value, variables, operation_name)
 
         if result.data is not None:
@@ -66,22 +64,21 @@ def parse_body(request):
     if request.content_type == 'application/graphql':
         return {'query': request.text}
     elif request.content_type == 'application/json':
-        return request.json
+        try:
+            return request.json
+        except ValueError:
+            raise Error('POST body sent invalid JSON.')
     elif request.content_type == 'application/x-www-form-urlencoded':
         return request.POST
 
     return {}
 
 
-class ParamError(Exception):
-    pass
-
-
 def get_graphql_params(request, data):
     query = request.GET.get('query') or data.get('query')
 
     if query is None:
-        raise ParamError('Must provide query string.')
+        raise Error('Must provide query string.')
 
     variables = request.GET.get('variables') or data.get('variables')
 
@@ -89,9 +86,22 @@ def get_graphql_params(request, data):
         try:
             variables = json.loads(variables)
         except ValueError:
-            raise ParamError('Variables are invalid JSON.')
+            raise Error('Variables are invalid JSON.')
 
     operation_name = (request.GET.get('operationName') or
                       data.get('operationName'))
 
     return query, variables, operation_name
+
+
+def error_response(e, pretty):
+    d = {
+        'errors': [{'message': e.message}]
+    }
+    return Response(status=400,
+                    content_type='application/json',
+                    body=json_dump(d, pretty))
+
+
+class Error(Exception):
+    pass

@@ -383,3 +383,17 @@ def test_error_handling_handles_errors_caused_by_a_lack_of_query():
     assert response.json == {
         'errors': [{'message': 'Must provide query string.'}]
     }
+
+
+def test_error_handling_handles_invalid_JSON_bodies():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.post('/',
+                      '{"query":',
+                      content_type='application/json',
+                      status=400)
+
+    assert response.json == {
+        'errors': [{'message': 'POST body sent invalid JSON.'}]
+    }
