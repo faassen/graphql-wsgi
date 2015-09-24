@@ -458,3 +458,18 @@ def test_error_handling_handles_unknown_encoding():
     assert response.json == {
         'errors': [{'message': 'Unsupported content encoding "garbage".'}]
     }
+
+
+def test_error_handling_handles_poorly_formed_variables():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+
+    response = c.get('/', {
+        'variables': 'who:You',
+        'query': 'query helloWho($who: String){ test(who: $who) }'
+    }, status=400)
+
+    assert response.json == {
+        'errors': [{'message': 'Variables are invalid JSON.'}]
+    }
