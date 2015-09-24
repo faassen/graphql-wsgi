@@ -428,3 +428,17 @@ def test_error_handling_handles_unsupported_charset():
     assert response.json == {
         'errors': [{'message': 'Unsupported charset "FOOBAR".'}]
     }
+
+
+def test_error_handling_handles_unsupported_utf_charset():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+
+    response = c.post('/',
+                      '{ test(who: "World") }',
+                      content_type='application/graphql; charset=utf-53',
+                      status=415)
+    assert response.json == {
+        'errors': [{'message': 'Unsupported charset "UTF-53".'}]
+    }
