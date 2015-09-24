@@ -397,3 +397,18 @@ def test_error_handling_handles_invalid_JSON_bodies():
     assert response.json == {
         'errors': [{'message': 'POST body sent invalid JSON.'}]
     }
+
+
+# actually text/plain post is not handled as a real query string
+# so this error results.
+def test_error_handling_handles_plain_POST_text():
+    wsgi = wsgi_graphql(TestSchema, pretty=True)
+
+    c = Client(wsgi)
+    response = c.post('/?variables=%s' % json.dumps({'who': 'Dolly'}),
+                      'query helloWho($who: String){ test(who: $who) }',
+                      content_type='text/plain',
+                      status=400)
+    assert response.json == {
+        'errors': [{'message': 'Must provide query string.'}]
+    }
