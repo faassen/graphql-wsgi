@@ -2,10 +2,9 @@ import json
 
 from webob.dec import wsgify
 from webob.response import Response
-from webob.exc import HTTPException, HTTPBadRequest, HTTPMethodNotAllowed
+from webob.exc import HTTPMethodNotAllowed
 
 from graphql.core import graphql
-from graphql.core.error import format_error
 
 
 def wsgi_graphql_dynamic(get_options):
