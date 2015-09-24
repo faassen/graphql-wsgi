@@ -218,3 +218,28 @@ def test_POST_functionaly_POST_raw_text_query_with_GET_variable_values():
             'test': 'Hello Dolly'
         }
     }
+
+
+def test_POST_functionality_allows_POST_with_operation_name():
+    wsgi = wsgi_graphql(TestSchema)
+
+    c = Client(wsgi)
+
+    response = c.post('/', {
+        'query': '''
+              query helloYou { test(who: "You"), ...shared }
+              query helloWorld { test(who: "World"), ...shared }
+              query helloDolly { test(who: "Dolly"), ...shared }
+              fragment shared on Root {
+                shared: test(who: "Everyone")
+              }
+            ''',
+        'operationName': 'helloWorld'
+    })
+
+    assert response.json == {
+        'data': {
+            'test': 'Hello World',
+            'shared': 'Hello Everyone'
+        }
+    }
