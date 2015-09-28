@@ -335,16 +335,12 @@ def test_pretty_printing_configured_by_request():
 }'''
 
 
-# FIXME:
-# see https://github.com/dittos/graphqllib/issues/52
-@pytest.mark.xfail
 def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
     wsgi = wsgi_graphql(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{thrower}'})
 
-    assert response.status == 200
     assert response.json == {
         'data': None,
         'errors': [{
@@ -354,9 +350,6 @@ def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
     }
 
 
-# FIXME:
-# see https://github.com/dittos/graphqllib/issues/53
-@pytest.mark.xfail
 def test_error_handling_handles_syntax_errors_caught_by_graphql():
     wsgi = wsgi_graphql(TestSchema, pretty=True)
 
@@ -368,7 +361,7 @@ def test_error_handling_handles_syntax_errors_caught_by_graphql():
         'errors': [{
             'message': ('Syntax Error GraphQL request (1:1) '
                         'Unexpected Name "syntaxerror"\n\n1: syntaxerror\n'
-                        '  ^\n'),
+                        '   ^\n'),
             'locations': [{'line': 1, 'column': 1}]
         }]
     }
@@ -486,8 +479,6 @@ def test_error_handling_handles_unsupported_http_methods():
     }
 
 
-# FIXME: Has weird format for error locations in output
-# See https://github.com/dittos/graphqllib/issues/54
 def test_error_handling_unknown_field():
     wsgi = wsgi_graphql(TestSchema, pretty=True)
 
@@ -500,7 +491,8 @@ def test_error_handling_unknown_field():
         'errors': [
             {
                 "locations": [
-                    [1, 2]
+                    {'line': 1,
+                     'column': 2}
                 ],
                 "message": 'Cannot query field "unknown" on "Root".'
             }
