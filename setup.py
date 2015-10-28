@@ -20,7 +20,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'setuptools',
-        'graphqllib',
+        'graphql-core',
         'webob'
     ],
     tests_require=tests_require,

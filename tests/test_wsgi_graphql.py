@@ -48,6 +48,7 @@ def test_GET_functionality_allows_GET_with_query_param():
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{test}'})
+
     assert response.json == {
         'data': {
             'test': 'Hello World'
