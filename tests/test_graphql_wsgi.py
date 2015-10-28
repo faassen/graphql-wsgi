@@ -1,7 +1,7 @@
 import pytest
 import json
 from webtest import TestApp as Client
-from wsgi_graphql import wsgi_graphql, wsgi_graphql_dynamic
+from graphql_wsgi import graphql_wsgi, graphql_wsgi_dynamic
 
 from graphql.core.type import (
     GraphQLObjectType,
@@ -44,7 +44,7 @@ TestSchema = GraphQLSchema(
 
 
 def test_GET_functionality_allows_GET_with_query_param():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{test}'})
@@ -57,7 +57,7 @@ def test_GET_functionality_allows_GET_with_query_param():
 
 
 def test_GET_functionality_allows_GET_with_variable_values():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
     response = c.get('/', {
@@ -73,7 +73,7 @@ def test_GET_functionality_allows_GET_with_variable_values():
 
 
 def test_GET_functionality_allows_GET_with_operation_name():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
     response = c.get('/', {
@@ -96,7 +96,7 @@ def test_GET_functionality_allows_GET_with_operation_name():
 
 
 def test_POST_functionality_allows_POST_with_JSON_encoding():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -110,7 +110,7 @@ def test_POST_functionality_allows_POST_with_JSON_encoding():
 
 
 def test_POST_functionality_allows_POST_with_url_encoding():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -124,7 +124,7 @@ def test_POST_functionality_allows_POST_with_url_encoding():
 
 
 def test_POST_functionality_supports_POST_JSON_query_with_string_variables():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -141,7 +141,7 @@ def test_POST_functionality_supports_POST_JSON_query_with_string_variables():
 
 
 def test_POST_functionality_supports_POST_JSON_query_with_JSON_variables():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -158,7 +158,7 @@ def test_POST_functionality_supports_POST_JSON_query_with_JSON_variables():
 
 
 def test_POST_functionality_POST_url_encoded_query_with_string_variables():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -175,7 +175,7 @@ def test_POST_functionality_POST_url_encoded_query_with_string_variables():
 
 
 def test_POST_functionality_POST_JSON_query_GET_variable_values():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -191,7 +191,7 @@ def test_POST_functionality_POST_JSON_query_GET_variable_values():
 
 
 def test_POST_functionality_url_encoded_query_with_GET_variable_values():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -207,7 +207,7 @@ def test_POST_functionality_url_encoded_query_with_GET_variable_values():
 
 
 def test_POST_functionaly_POST_raw_text_query_with_GET_variable_values():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -223,7 +223,7 @@ def test_POST_functionaly_POST_raw_text_query_with_GET_variable_values():
 
 
 def test_POST_functionality_allows_POST_with_operation_name():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -248,7 +248,7 @@ def test_POST_functionality_allows_POST_with_operation_name():
 
 
 def test_POST_functionality_allows_POST_with_GET_operation_name():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -272,7 +272,7 @@ def test_POST_functionality_allows_POST_with_GET_operation_name():
 
 
 def test_POST_functionality_allows_other_UTF_charsets():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 
@@ -296,7 +296,7 @@ def test_POST_functionality_allows_other_UTF_charsets():
 # though with WebOb it can be done with a Request subclass.
 
 def test_pretty_printing_supports_pretty_printing():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{test}'})
@@ -312,7 +312,7 @@ def test_pretty_printing_configured_by_request():
     def options_from_request(request):
         return TestSchema, None, request.GET.get('pretty') == '1'
 
-    wsgi = wsgi_graphql_dynamic(options_from_request)
+    wsgi = graphql_wsgi_dynamic(options_from_request)
 
     c = Client(wsgi)
 
@@ -337,7 +337,7 @@ def test_pretty_printing_configured_by_request():
 
 
 def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{thrower}'})
@@ -352,7 +352,7 @@ def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
 
 
 def test_error_handling_handles_syntax_errors_caught_by_graphql():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.get('/', {'query': 'syntaxerror'}, status=400)
@@ -369,7 +369,7 @@ def test_error_handling_handles_syntax_errors_caught_by_graphql():
 
 
 def test_error_handling_handles_errors_caused_by_a_lack_of_query():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.get('/', status=400)
@@ -380,7 +380,7 @@ def test_error_handling_handles_errors_caused_by_a_lack_of_query():
 
 
 def test_error_handling_handles_invalid_JSON_bodies():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.post('/',
@@ -396,7 +396,7 @@ def test_error_handling_handles_invalid_JSON_bodies():
 # actually text/plain post is not handled as a real query string
 # so this error results.
 def test_error_handling_handles_plain_POST_text():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.post('/?variables=%s' % json.dumps({'who': 'Dolly'}),
@@ -411,7 +411,7 @@ def test_error_handling_handles_plain_POST_text():
 # need to do the test with foobar instead of ascii as in the original
 # test as ascii *is* a recognized encoding.
 def test_error_handling_handles_unsupported_charset():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
 
@@ -425,7 +425,7 @@ def test_error_handling_handles_unsupported_charset():
 
 
 def test_error_handling_handles_unsupported_utf_charset():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
 
@@ -441,7 +441,7 @@ def test_error_handling_handles_unsupported_utf_charset():
 # I have no idea how to handle Content-Encoding with WSGI
 @pytest.mark.xfail
 def test_error_handling_handles_unknown_encoding():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
 
@@ -455,7 +455,7 @@ def test_error_handling_handles_unknown_encoding():
 
 
 def test_error_handling_handles_poorly_formed_variables():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
 
@@ -470,7 +470,7 @@ def test_error_handling_handles_poorly_formed_variables():
 
 
 def test_error_handling_handles_unsupported_http_methods():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     response = c.put('/?query={test}', status=405)
@@ -481,7 +481,7 @@ def test_error_handling_handles_unsupported_http_methods():
 
 
 def test_error_handling_unknown_field():
-    wsgi = wsgi_graphql(TestSchema, pretty=True)
+    wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
     # I think this should actually be a 200 status
@@ -503,7 +503,7 @@ def test_error_handling_unknown_field():
 
 # this didn't appear to be covered in the test suite of express-graphql
 def test_POST_functionality_variables_in_json_POST_body_not_encoded():
-    wsgi = wsgi_graphql(TestSchema)
+    wsgi = graphql_wsgi(TestSchema)
 
     c = Client(wsgi)
 

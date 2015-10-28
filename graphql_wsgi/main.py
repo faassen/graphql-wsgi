@@ -8,7 +8,7 @@ from graphql.core import graphql
 from graphql.core.error import format_error
 
 
-def wsgi_graphql_dynamic(get_options):
+def graphql_wsgi_dynamic(get_options):
     @wsgify
     def handle(request):
         schema, root_value, pretty = get_options(request)
@@ -50,11 +50,11 @@ def wsgi_graphql_dynamic(get_options):
     return handle
 
 
-def wsgi_graphql(schema, root_value=None, pretty=None):
+def graphql_wsgi(schema, root_value=None, pretty=None):
     def get_options(request):
         return schema, root_value, pretty
 
-    return wsgi_graphql_dynamic(get_options)
+    return graphql_wsgi_dynamic(get_options)
 
 
 def json_dump(d, pretty):

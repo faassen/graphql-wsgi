@@ -9,7 +9,7 @@ tests_require = [
 
 
 setup(
-    name='wsgi_graphql',
+    name='graphql-wsgi',
     version='0.1.dev0',
     description="GraphQL server for Python WSGI",
     author="Martijn Faassen",
