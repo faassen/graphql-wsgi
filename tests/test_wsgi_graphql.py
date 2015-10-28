@@ -18,7 +18,7 @@ def raises(*_):
 
 
 def resolver(root, args, *_):
-    return 'Hello ' + (args['who'] or 'World')
+    return 'Hello ' + args.get('who', 'World')
 
 
 TestSchema = GraphQLSchema(
