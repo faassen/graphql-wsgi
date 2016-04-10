@@ -4,3 +4,4 @@ src
 develop-eggs
 .installed.cfg
 *.egg-info
+.cache

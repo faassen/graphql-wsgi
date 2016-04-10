@@ -1,5 +1,6 @@
 import json
 
+import six
 from webob.dec import wsgify
 from webob.response import Response
 
@@ -24,13 +25,13 @@ def graphql_wsgi_dynamic(get_options):
 
         try:
             data = parse_body(request)
-        except Error, e:
+        except Error as e:
             return error_response(e, pretty)
 
         try:
             query, variables, operation_name = get_graphql_params(
                 request, data)
-        except Error, e:
+        except Error as e:
             return error_response(e, pretty)
         result = graphql(schema, query, root_value, variables, operation_name)
 
@@ -93,7 +94,7 @@ def get_graphql_params(request, data):
 
     variables = request.GET.get('variables') or data.get('variables')
 
-    if variables is not None and isinstance(variables, basestring):
+    if variables is not None and isinstance(variables, six.string_types):
         try:
             variables = json.loads(variables)
         except ValueError:
@@ -107,7 +108,7 @@ def get_graphql_params(request, data):
 
 def error_response(e, pretty):
     d = {
-        'errors': [{'message': e.message}]
+        'errors': [{'message': e.args[0]}]
     }
     response = Response(status=e.status,
                         content_type='application/json',
