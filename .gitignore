@@ -5,3 +5,5 @@ develop-eggs
 .installed.cfg
 *.egg-info
 .cache
+__pycache__
+*.pyc
