@@ -22,7 +22,8 @@ setup(
     install_requires=[
         'setuptools',
         'graphql-core',
-        'webob'
+        'webob',
+        'six',
     ],
     tests_require=tests_require,
     extras_require=dict(

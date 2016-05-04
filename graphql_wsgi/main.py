@@ -1,11 +1,12 @@
 import json
 
+import six
 from webob.dec import wsgify
 from webob.response import Response
 
 
 from graphql.core import graphql
-from graphql.core.error import format_error
+from graphql.core.error import GraphQLError, format_error as format_graphql_error
 
 
 def graphql_wsgi_dynamic(get_options):
@@ -24,13 +25,13 @@ def graphql_wsgi_dynamic(get_options):
 
         try:
             data = parse_body(request)
-        except Error, e:
+        except Error as e:
             return error_response(e, pretty)
 
         try:
             query, variables, operation_name = get_graphql_params(
                 request, data)
-        except Error, e:
+        except Error as e:
             return error_response(e, pretty)
         result = graphql(schema, query, root_value, variables, operation_name)
 
@@ -41,13 +42,20 @@ def graphql_wsgi_dynamic(get_options):
 
         d = {'data': result.data}
         if result.errors:
-            d['errors'] = [format_error(error)
-                           for error in result.errors]
+            d['errors'] = [format_error(error) for error in result.errors]
 
         return Response(status=status,
                         content_type='application/json',
                         body=json_dump(d, pretty))
     return handle
+
+
+def format_error(error):
+    if isinstance(error, GraphQLError):
+        return format_graphql_error(error)
+
+    return {'message': '{}: {}'.format(
+        error.__class__.__name__, six.text_type(error))}
 
 
 def graphql_wsgi(schema, root_value=None, pretty=None):
@@ -93,7 +101,7 @@ def get_graphql_params(request, data):
 
     variables = request.GET.get('variables') or data.get('variables')
 
-    if variables is not None and isinstance(variables, basestring):
+    if variables is not None and isinstance(variables, six.text_type):
         try:
             variables = json.loads(variables)
         except ValueError:
@@ -107,7 +115,7 @@ def get_graphql_params(request, data):
 
 def error_response(e, pretty):
     d = {
-        'errors': [{'message': e.message}]
+        'errors': [{'message': six.text_type(e)}]
     }
     response = Response(status=e.status,
                         content_type='application/json',
