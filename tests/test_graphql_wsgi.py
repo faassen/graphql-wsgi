@@ -3,7 +3,7 @@ import json
 from webtest import TestApp as Client
 from graphql_wsgi import graphql_wsgi, graphql_wsgi_dynamic
 
-from graphql.core.type import (
+from graphql.type import (
     GraphQLObjectType,
     GraphQLField,
     GraphQLArgument,

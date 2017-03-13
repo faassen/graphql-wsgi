@@ -5,8 +5,8 @@ from webob.dec import wsgify
 from webob.response import Response
 
 
-from graphql.core import graphql
-from graphql.core.error import GraphQLError, format_error as format_graphql_error
+from graphql import graphql
+from graphql.error import GraphQLError, format_error as format_graphql_error
 
 
 def graphql_wsgi_dynamic(get_options):
