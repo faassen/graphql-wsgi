@@ -33,7 +33,12 @@ def graphql_wsgi_dynamic(get_options):
                 request, data)
         except Error as e:
             return error_response(e, pretty)
-        result = graphql(schema, query, root_value, variables, operation_name)
+
+        context_value = request.matchdict
+        result = graphql(schema, query, root_value,
+                context_value,
+                variables,
+                operation_name)
 
         if result.invalid:
             status = 400
