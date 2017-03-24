@@ -34,7 +34,7 @@ def graphql_wsgi_dynamic(get_options):
         except Error as e:
             return error_response(e, pretty)
 
-        context_value = request.matchdict
+        context_value = request
         result = graphql(schema, query, root_value,
                 context_value,
                 variables,
