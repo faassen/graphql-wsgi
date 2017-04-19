@@ -51,7 +51,7 @@ def graphql_wsgi_dynamic(get_options):
 
         return Response(status=status,
                         content_type='application/json',
-                        body=json_dump(d, pretty))
+                        body=json_dump(d, pretty).encode('utf8'))
     return handle
 
 
