@@ -124,7 +124,7 @@ def error_response(e, pretty):
     }
     response = Response(status=e.status,
                         content_type='application/json',
-                        body=json_dump(d, pretty))
+                        body=json_dump(d, pretty).encode('utf8'))
     if e.headers:
         response.headers.update(e.headers)
     return response
