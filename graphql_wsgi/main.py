@@ -94,6 +94,8 @@ def parse_body(request):
             raise Error('POST body sent invalid JSON.')
     elif request.content_type == 'application/x-www-form-urlencoded':
         return request.POST
+    elif request.content_type == 'multipart/form-data':  # support for apollo-upload-client
+        return json.loads(request.POST['operations'])
 
     return {}
 
@@ -114,6 +116,10 @@ def get_graphql_params(request, data):
 
     operation_name = (request.GET.get('operationName') or
                       data.get('operationName'))
+
+    for key, value in request.POST.items():  # support for apollo-upload-client
+        if key.startswith('variables.'):
+            variables[key[10:]] = key
 
     return query, variables, operation_name
 
