@@ -14,3 +14,9 @@ This code was ported by Martijn Faassen.
 ## License
 
 [MIT License](https://github.com/faassen/graphql_wsgi/blob/master/LICENSE)
+
+## How to execute the tests
+
+    python2.7 bootstrap-buildout.py
+    bin/buildout
+    bin/py.test tests -vv --pdb

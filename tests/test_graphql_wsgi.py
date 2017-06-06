@@ -495,7 +495,7 @@ def test_error_handling_unknown_field():
                     {'line': 1,
                      'column': 2}
                 ],
-                "message": 'Cannot query field "unknown" on "Root".'
+                "message": u'Cannot query field "unknown" on type "Root".'
             }
         ]
     }
