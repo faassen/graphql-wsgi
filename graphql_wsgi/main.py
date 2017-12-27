@@ -12,7 +12,7 @@ from graphql.error import GraphQLError, format_error as format_graphql_error
 def graphql_wsgi_dynamic(get_options):
     @wsgify
     def handle(request):
-        schema, root_value, pretty = get_options(request)
+        schema, root_value, pretty, middleware = get_options(request)
 
         if request.method != 'GET' and request.method != 'POST':
             return error_response(
@@ -38,7 +38,8 @@ def graphql_wsgi_dynamic(get_options):
         result = graphql(schema, query, root_value,
                 context_value,
                 variables,
-                operation_name)
+                operation_name,
+                middleware=middleware)
 
         if result.invalid:
             status = 400
@@ -63,9 +64,9 @@ def format_error(error):
         error.__class__.__name__, six.text_type(error))}
 
 
-def graphql_wsgi(schema, root_value=None, pretty=None):
+def graphql_wsgi(schema, root_value=None, pretty=None, middleware=None):
     def get_options(request):
-        return schema, root_value, pretty
+        return schema, root_value, pretty, middleware
 
     return graphql_wsgi_dynamic(get_options)
 
