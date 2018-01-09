@@ -5,14 +5,14 @@ from webob.dec import wsgify
 from webob.response import Response
 
 
-from graphql.core import graphql
-from graphql.core.error import GraphQLError, format_error as format_graphql_error
+from graphql import graphql
+from graphql.error import GraphQLError, format_error as format_graphql_error
 
 
 def graphql_wsgi_dynamic(get_options):
     @wsgify
     def handle(request):
-        schema, root_value, pretty = get_options(request)
+        schema, root_value, pretty, middleware = get_options(request)
 
         if request.method != 'GET' and request.method != 'POST':
             return error_response(
@@ -33,7 +33,13 @@ def graphql_wsgi_dynamic(get_options):
                 request, data)
         except Error as e:
             return error_response(e, pretty)
-        result = graphql(schema, query, root_value, variables, operation_name)
+
+        context_value = request
+        result = graphql(schema, query, root_value,
+                context_value,
+                variables,
+                operation_name,
+                middleware=middleware)
 
         if result.invalid:
             status = 400
@@ -46,7 +52,7 @@ def graphql_wsgi_dynamic(get_options):
 
         return Response(status=status,
                         content_type='application/json',
-                        body=json_dump(d, pretty))
+                        body=json_dump(d, pretty).encode('utf8'))
     return handle
 
 
@@ -58,9 +64,9 @@ def format_error(error):
         error.__class__.__name__, six.text_type(error))}
 
 
-def graphql_wsgi(schema, root_value=None, pretty=None):
+def graphql_wsgi(schema, root_value=None, pretty=None, middleware=None):
     def get_options(request):
-        return schema, root_value, pretty
+        return schema, root_value, pretty, middleware
 
     return graphql_wsgi_dynamic(get_options)
 
@@ -89,6 +95,8 @@ def parse_body(request):
             raise Error('POST body sent invalid JSON.')
     elif request.content_type == 'application/x-www-form-urlencoded':
         return request.POST
+    elif request.content_type == 'multipart/form-data':  # support for apollo-upload-client
+        return json.loads(request.POST['operations'])
 
     return {}
 
@@ -110,6 +118,10 @@ def get_graphql_params(request, data):
     operation_name = (request.GET.get('operationName') or
                       data.get('operationName'))
 
+    for key, value in request.POST.items():  # support for apollo-upload-client
+        if key.startswith('variables.'):
+            variables[key[10:]] = key
+
     return query, variables, operation_name
 
 
@@ -119,7 +131,7 @@ def error_response(e, pretty):
     }
     response = Response(status=e.status,
                         content_type='application/json',
-                        body=json_dump(d, pretty))
+                        body=json_dump(d, pretty).encode('utf8'))
     if e.headers:
         response.headers.update(e.headers)
     return response

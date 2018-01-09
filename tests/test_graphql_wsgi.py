@@ -3,7 +3,7 @@ import json
 from webtest import TestApp as Client
 from graphql_wsgi import graphql_wsgi, graphql_wsgi_dynamic
 
-from graphql.core.type import (
+from graphql.type import (
     GraphQLObjectType,
     GraphQLField,
     GraphQLArgument,
@@ -114,7 +114,7 @@ def test_POST_functionality_allows_POST_with_url_encoding():
 
     c = Client(wsgi)
 
-    response = c.post('/', {'query': '{test}'})
+    response = c.post('/', {'query': b'{test}'})
 
     assert response.json == {
         'data': {
@@ -129,7 +129,7 @@ def test_POST_functionality_supports_POST_JSON_query_with_string_variables():
     c = Client(wsgi)
 
     response = c.post('/', {
-        'query': 'query helloWho($who: String){ test(who: $who) }',
+        'query': b'query helloWho($who: String){ test(who: $who) }',
         'variables': json.dumps({'who': 'Dolly'})
     })
 
@@ -163,7 +163,7 @@ def test_POST_functionality_POST_url_encoded_query_with_string_variables():
     c = Client(wsgi)
 
     response = c.post('/', {
-        'query': 'query helloWho($who: String){ test(who: $who) }',
+        'query': b'query helloWho($who: String){ test(who: $who) }',
         'variables': json.dumps({'who': 'Dolly'})
     })
 
@@ -196,7 +196,7 @@ def test_POST_functionality_url_encoded_query_with_GET_variable_values():
     c = Client(wsgi)
 
     response = c.post("/?variables=%s" % json.dumps({'who': 'Dolly'}), {
-        'query': 'query helloWho($who: String){ test(who: $who) }'
+        'query': b'query helloWho($who: String){ test(who: $who) }'
     })
 
     assert response.json == {
@@ -212,7 +212,7 @@ def test_POST_functionaly_POST_raw_text_query_with_GET_variable_values():
     c = Client(wsgi)
 
     response = c.post("/?variables=%s" % json.dumps({'who': 'Dolly'}),
-                      'query helloWho($who: String){ test(who: $who) }',
+                      b'query helloWho($who: String){ test(who: $who) }',
                       content_type='application/graphql')
 
     assert response.json == {
@@ -228,7 +228,7 @@ def test_POST_functionality_allows_POST_with_operation_name():
     c = Client(wsgi)
 
     response = c.post('/', {
-        'query': '''
+        'query': b'''
               query helloYou { test(who: "You"), ...shared }
               query helloWorld { test(who: "World"), ...shared }
               query helloDolly { test(who: "Dolly"), ...shared }
@@ -236,7 +236,7 @@ def test_POST_functionality_allows_POST_with_operation_name():
                 shared: test(who: "Everyone")
               }
             ''',
-        'operationName': 'helloWorld'
+        'operationName': b'helloWorld'
     })
 
     assert response.json == {
@@ -253,7 +253,7 @@ def test_POST_functionality_allows_POST_with_GET_operation_name():
     c = Client(wsgi)
 
     response = c.post('/?operationName=helloWorld', {
-        'query': '''
+        'query': b'''
               query helloYou { test(who: "You"), ...shared }
               query helloWorld { test(who: "World"), ...shared }
               query helloDolly { test(who: "Dolly"), ...shared }
@@ -300,7 +300,7 @@ def test_pretty_printing_supports_pretty_printing():
 
     c = Client(wsgi)
     response = c.get('/', {'query': '{test}'})
-    assert response.body == '''\
+    assert response.body == b'''\
 {
   "data": {
     "test": "Hello World"
@@ -321,14 +321,14 @@ def test_pretty_printing_configured_by_request():
         'pretty': '0'
     })
 
-    assert response.body == '{"data":{"test":"Hello World"}}'
+    assert response.body == b'{"data":{"test":"Hello World"}}'
 
     response = c.get('/', {
         'query': '{test}',
         'pretty': '1'
     })
 
-    assert response.body == '''\
+    assert response.body == b'''\
 {
   "data": {
     "test": "Hello World"
@@ -340,7 +340,7 @@ def test_error_handling_functionality_handles_field_errors_caught_by_graphql():
     wsgi = graphql_wsgi(TestSchema, pretty=True)
 
     c = Client(wsgi)
-    response = c.get('/', {'query': '{thrower}'})
+    response = c.get('/', {'query': b'{thrower}'})
 
     assert response.json == {
         'data': None,
@@ -384,7 +384,7 @@ def test_error_handling_handles_invalid_JSON_bodies():
 
     c = Client(wsgi)
     response = c.post('/',
-                      '{"query":',
+                      b'{"query":',
                       content_type='application/json',
                       status=400)
 
@@ -400,7 +400,7 @@ def test_error_handling_handles_plain_POST_text():
 
     c = Client(wsgi)
     response = c.post('/?variables=%s' % json.dumps({'who': 'Dolly'}),
-                      'query helloWho($who: String){ test(who: $who) }',
+                      b'query helloWho($who: String){ test(who: $who) }',
                       content_type='text/plain',
                       status=400)
     assert response.json == {
@@ -416,7 +416,7 @@ def test_error_handling_handles_unsupported_charset():
     c = Client(wsgi)
 
     response = c.post('/',
-                      '{ test(who: "World") }',
+                      b'{ test(who: "World") }',
                       content_type='application/graphql; charset=foobar',
                       status=415)
     assert response.json == {
@@ -430,7 +430,7 @@ def test_error_handling_handles_unsupported_utf_charset():
     c = Client(wsgi)
 
     response = c.post('/',
-                      '{ test(who: "World") }',
+                      b'{ test(who: "World") }',
                       content_type='application/graphql; charset=utf-53',
                       status=415)
     assert response.json == {
@@ -446,7 +446,7 @@ def test_error_handling_handles_unknown_encoding():
     c = Client(wsgi)
 
     response = c.post('/',
-                      '!@#$%^*(&^$%#@',
+                      b'!@#$%^*(&^$%#@',
                       headers={'Content-Encoding': 'garbage'},
                       status=415)
     assert response.json == {
@@ -460,8 +460,8 @@ def test_error_handling_handles_poorly_formed_variables():
     c = Client(wsgi)
 
     response = c.get('/', {
-        'variables': 'who:You',
-        'query': 'query helloWho($who: String){ test(who: $who) }'
+        'variables': b'who:You',
+        'query': b'query helloWho($who: String){ test(who: $who) }'
     }, status=400)
 
     assert response.json == {
@@ -495,7 +495,7 @@ def test_error_handling_unknown_field():
                     {'line': 1,
                      'column': 2}
                 ],
-                "message": 'Cannot query field "unknown" on "Root".'
+                "message": u'Cannot query field "unknown" on type "Root".'
             }
         ]
     }
